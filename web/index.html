@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenRTB 2.6 Bid Request Auditor</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --ink: #16191d;
+    --muted: #5d6672;
+    --line: #dfe3e8;
+    --accent: #2a5bd7;
+    --error: #c62828;
+    --error-bg: #fdecec;
+    --warning: #9a6200;
+    --warning-bg: #fdf3e0;
+    --info: #1f6a8b;
+    --info-bg: #eaf4f9;
+    --ok: #1f7a45;
+    --ok-bg: #eaf6ee;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181c;
+      --panel: #1e2126;
+      --ink: #e7e9ec;
+      --muted: #9aa4b1;
+      --line: #31363d;
+      --accent: #7aa2f7;
+      --error: #ff8a80;
+      --error-bg: #35211f;
+      --warning: #ffce7a;
+      --warning-bg: #33291a;
+      --info: #8fd3f4;
+      --info-bg: #1b2b33;
+      --ok: #8fe0aa;
+      --ok-bg: #1c2c22;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 1.5rem 1.25rem 3rem;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; }
+
+  header { margin-bottom: 1.25rem; }
+  h1 { font-size: 1.4rem; margin: 0 0 .35rem; letter-spacing: -.01em; }
+  .notice { margin: 0; color: var(--muted); font-size: .875rem; max-width: 70ch; }
+  .notice strong { color: var(--ink); font-weight: 600; }
+
+  .grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
+  @media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: .9rem;
+  }
+  /* The input column tracks the height of the findings column, so a long
+     result list gives you more of the request to read rather than dead space. */
+  .panel.input { display: flex; flex-direction: column; }
+  .panel.input .dropzone { flex: 1; display: flex; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin-bottom: .7rem; }
+  .toolbar-label { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-right: .15rem; }
+
+  button {
+    font: inherit;
+    font-size: .84rem;
+    padding: .32rem .6rem;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button.ghost { color: var(--muted); }
+
+  .dropzone { position: relative; border: 2px dashed transparent; border-radius: 8px; transition: border-color .12s, background .12s; }
+  .dropzone.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+  textarea {
+    display: block;
+    width: 100%;
+    min-height: 26rem;
+    resize: vertical;
+    padding: .7rem;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font: 12.5px/1.5 var(--mono);
+    tab-size: 2;
+  }
+  textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .drophint { margin: .5rem 0 0; font-size: .8rem; color: var(--muted); }
+
+  .summary { display: flex; flex-wrap: wrap; gap: .4rem; align-items: baseline; margin-bottom: .8rem; }
+  .summary-count { font-size: 1.05rem; font-weight: 600; }
+  .pill { font-size: .78rem; padding: .1rem .45rem; border-radius: 999px; font-weight: 600; }
+  .pill.ERROR { color: var(--error); background: var(--error-bg); }
+  .pill.WARNING { color: var(--warning); background: var(--warning-bg); }
+  .pill.INFO { color: var(--info); background: var(--info-bg); }
+
+  .group + .group { margin-top: 1rem; }
+  .group-head {
+    display: flex; align-items: baseline; gap: .4rem;
+    font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    padding-bottom: .35rem; margin-bottom: .5rem; border-bottom: 1px solid var(--line);
+  }
+  .group.ERROR .group-head { color: var(--error); }
+  .group.WARNING .group-head { color: var(--warning); }
+  .group.INFO .group-head { color: var(--info); }
+  .group-head span { font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted); }
+
+  .finding { border-left: 3px solid; border-radius: 0 6px 6px 0; padding: .5rem .65rem; margin-bottom: .45rem; }
+  .group.ERROR .finding { border-color: var(--error); background: var(--error-bg); }
+  .group.WARNING .finding { border-color: var(--warning); background: var(--warning-bg); }
+  .group.INFO .finding { border-color: var(--info); background: var(--info-bg); }
+
+  .finding-head { display: flex; flex-wrap: wrap; gap: .4rem; align-items: baseline; }
+  .chip {
+    font: 700 .7rem/1.5 var(--mono);
+    min-width: 1.4rem; text-align: center;
+    padding: 0 .25rem; border-radius: 4px;
+    background: color-mix(in srgb, currentColor 15%, transparent);
+  }
+  .group.ERROR .chip { color: var(--error); }
+  .group.WARNING .chip { color: var(--warning); }
+  .group.INFO .chip { color: var(--info); }
+  .check-id { font: 600 .82rem var(--mono); }
+  .path { font: .8rem var(--mono); color: var(--muted); word-break: break-all; }
+  .message { margin: .3rem 0 .2rem; font-size: .88rem; }
+  .spec { font-size: .78rem; color: var(--muted); }
+
+  .state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+  .state.ok { color: var(--ok); background: var(--ok-bg); border-radius: 8px; }
+  .state-title { font-size: 1.05rem; font-weight: 600; margin-bottom: .25rem; }
+  .state.ok .state-title::before { content: "\2713\00a0"; }
+  .state-sub { font-size: .85rem; }
+  .state.ok .state-sub { color: color-mix(in srgb, var(--ok) 75%, var(--muted)); }
+
+  footer { margin-top: 1.25rem; font-size: .8rem; color: var(--muted); }
+  code { font: .95em var(--mono); }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>OpenRTB 2.6 Bid Request Auditor</h1>
+    <p class="notice">
+      <strong>Everything runs client-side.</strong> The 21 checks are loaded into this page as
+      plain JavaScript and applied in your browser &mdash; there is no backend, no request is
+      uploaded anywhere, and nothing is sent over the network. Validation is deterministic code
+      with no LLM calls; severities and spec citations come from <code>reference/</code>.
+    </p>
+  </header>
+
+  <div class="grid">
+    <section class="panel input" aria-labelledby="input-heading">
+      <h2 class="sr-only" id="input-heading">Bid request input</h2>
+      <div class="toolbar">
+        <span class="toolbar-label">Samples</span>
+        <span id="sample-buttons"></span>
+      </div>
+      <div class="toolbar">
+        <button type="button" id="pick">Choose file&hellip;</button>
+        <button type="button" id="clear" class="ghost">Clear</button>
+        <input type="file" id="file" accept=".json,application/json" hidden>
+      </div>
+      <div class="dropzone" id="dropzone">
+        <label class="sr-only" for="json">Bid request JSON</label>
+        <textarea id="json" spellcheck="false" autocomplete="off"
+          placeholder="Paste an OpenRTB 2.6 bid request, drop a .json file here, or load a sample above."></textarea>
+      </div>
+      <p class="drophint">Drop a <code>.json</code> file anywhere on this panel. Findings update as you type.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="results-heading" aria-live="polite">
+      <h2 class="sr-only" id="results-heading">Findings</h2>
+      <div id="results"></div>
+    </section>
+  </div>
+
+  <footer>
+    Rules and spec citations live in <code>src/rules/</code>; <code>web/auditor.js</code> is
+    generated from them by <code>node tools/build-web.mjs</code>. Severity policy: ERROR only
+    where a spec table says &ldquo;required&rdquo;; unknown fields and enum values are INFO at
+    most, per OpenRTB 2.6 &sect;2.6.
+  </footer>
+
+</div>
+
+<script src="auditor.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var api = globalThis.BidRequestAuditor;
+  var textarea = document.getElementById('json');
+  var results = document.getElementById('results');
+  var dropzone = document.getElementById('dropzone');
+  var fileInput = document.getElementById('file');
+
+  var SEVERITIES = api ? api.SEVERITY_ORDER : ['ERROR', 'WARNING', 'INFO'];
+  var CATEGORY_NAMES = {
+    S: 'spec conformance',
+    E: 'enumerated value',
+    C: 'internal contradiction',
+    P: 'privacy signal'
+  };
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    // textContent throughout: findings quote values from the pasted request,
+    // so nothing from the input is ever treated as markup.
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function state(kind, title, sub) {
+    var box = el('div', 'state' + (kind ? ' ' + kind : ''));
+    box.appendChild(el('div', 'state-title', title));
+    if (sub) box.appendChild(el('div', 'state-sub', sub));
+    return box;
+  }
+
+  function findingNode(finding) {
+    var item = el('div', 'finding');
+
+    var head = el('div', 'finding-head');
+    var chip = el('span', 'chip', finding.category);
+    chip.title = CATEGORY_NAMES[finding.category] || finding.category;
+    head.appendChild(chip);
+    head.appendChild(el('span', 'check-id', finding.id));
+    head.appendChild(el('span', 'path', finding.path));
+    item.appendChild(head);
+
+    item.appendChild(el('p', 'message', finding.message));
+    item.appendChild(el('div', 'spec', finding.spec));
+    return item;
+  }
+
+  function render(result) {
+    results.textContent = '';
+
+    var total = result.findings.length;
+    var summary = el('div', 'summary');
+    summary.appendChild(el('span', 'summary-count',
+      total + (total === 1 ? ' finding' : ' findings')));
+    SEVERITIES.forEach(function (severity) {
+      var count = result.counts[severity];
+      if (count > 0) summary.appendChild(el('span', 'pill ' + severity, count + ' ' + severity));
+    });
+    results.appendChild(summary);
+
+    SEVERITIES.forEach(function (severity) {
+      var group = result.findings.filter(function (finding) { return finding.severity === severity; });
+      if (group.length === 0) return;
+
+      var section = el('section', 'group ' + severity);
+      var head = el('div', 'group-head', severity);
+      head.appendChild(el('span', String(group.length)));
+      section.appendChild(head);
+      group.forEach(function (finding) { section.appendChild(findingNode(finding)); });
+      results.appendChild(section);
+    });
+  }
+
+  function audit() {
+    var text = textarea.value;
+
+    if (text.trim() === '') {
+      results.textContent = '';
+      results.appendChild(state('', 'Nothing to audit yet',
+        'Paste a bid request, drop a .json file, or load one of the five samples.'));
+      return;
+    }
+
+    var result = api.audit(text);
+
+    if (result.findings.length === 0) {
+      results.textContent = '';
+      results.appendChild(state('ok', 'No problems found',
+        'All 21 checks passed: no missing required fields, no contradictions, no undefined enum values, no unknown fields.'));
+      return;
+    }
+
+    render(result);
+  }
+
+  var pending = 0;
+  function scheduleAudit() {
+    clearTimeout(pending);
+    pending = setTimeout(audit, 120);
+  }
+
+  function load(text) {
+    textarea.value = text;
+    audit();
+  }
+
+  function readFile(file) {
+    var reader = new FileReader();
+    reader.onload = function () { load(String(reader.result)); };
+    reader.onerror = function () {
+      results.textContent = '';
+      results.appendChild(state('', 'Could not read that file', file.name));
+    };
+    reader.readAsText(file);
+  }
+
+  // --- sample buttons -----------------------------------------------------
+  var holder = document.getElementById('sample-buttons');
+  Object.keys(api ? api.samples : {}).forEach(function (name) {
+    var button = el('button', undefined, name.replace(/\.json$/, ''));
+    button.type = 'button';
+    button.addEventListener('click', function () { load(api.samples[name]); });
+    holder.appendChild(button);
+  });
+
+  // --- input --------------------------------------------------------------
+  textarea.addEventListener('input', scheduleAudit);
+
+  document.getElementById('clear').addEventListener('click', function () {
+    textarea.value = '';
+    audit();
+    textarea.focus();
+  });
+
+  document.getElementById('pick').addEventListener('click', function () { fileInput.click(); });
+  fileInput.addEventListener('change', function () {
+    if (fileInput.files && fileInput.files[0]) readFile(fileInput.files[0]);
+    fileInput.value = '';
+  });
+
+  // --- drop zone ----------------------------------------------------------
+  ['dragenter', 'dragover'].forEach(function (type) {
+    dropzone.addEventListener(type, function (event) {
+      event.preventDefault();
+      dropzone.classList.add('over');
+    });
+  });
+  ['dragleave', 'dragend'].forEach(function (type) {
+    dropzone.addEventListener(type, function () { dropzone.classList.remove('over'); });
+  });
+  dropzone.addEventListener('drop', function (event) {
+    event.preventDefault();
+    dropzone.classList.remove('over');
+    var file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+    if (file) readFile(file);
+  });
+  // Stop the browser from navigating away when a file misses the drop zone.
+  window.addEventListener('dragover', function (event) { event.preventDefault(); });
+  window.addEventListener('drop', function (event) { event.preventDefault(); });
+
+  if (!api) {
+    results.appendChild(state('', 'auditor.js did not load',
+      'Run: node tools/build-web.mjs'));
+    return;
+  }
+
+  audit();
+}());
+</script>
+</body>
+</html>

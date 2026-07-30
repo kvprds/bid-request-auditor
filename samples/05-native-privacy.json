@@ -1,0 +1,98 @@
+{
+  "id": "native-req-0005",
+  "at": 2,
+  "tmax": 200,
+  "cur": ["USD"],
+  "wlang": ["en"],
+  "wlangb": ["en-US"],
+  "imp": [
+    {
+      "id": "1",
+      "tagid": "feed-native-1",
+      "bidfloor": 1.2,
+      "bidfloorcur": "USD",
+      "secure": 1,
+      "native": {
+        "ver": "1.2",
+        "api": [3],
+        "battr": [1, 9]
+      }
+    }
+  ],
+  "site": {
+    "id": "site-5501",
+    "name": "Foobar Kids Games",
+    "domain": "kids.foobar.com",
+    "page": "http://kids.foobar.com/games/puzzle",
+    "cat": ["IAB6-7"],
+    "keywords": "games,kids,puzzle",
+    "kwarray": ["games", "kids", "puzzle"],
+    "privacypolicy": 1,
+    "publisher": {
+      "id": "pub-5501",
+      "name": "Foobar Kids",
+      "domain": "foobar.com"
+    }
+  },
+  "device": {
+    "ua": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36",
+    "ip": "192.0.2.55",
+    "devicetype": 4,
+    "make": "Google",
+    "model": "Pixel 8",
+    "os": "Android",
+    "osv": "14",
+    "dnt": 1,
+    "ifa": "38400000-8cf0-11bd-b23e-10b96e40000d",
+    "geo": {
+      "lat": 32.085300,
+      "lon": 34.781768,
+      "type": 2,
+      "accuracy": 10,
+      "country": "ISR",
+      "city": "Tel Aviv"
+    }
+  },
+  "user": {
+    "id": "user-kids-7781",
+    "yob": 2016,
+    "gender": "M",
+    "keywords": "cartoons,toys",
+    "consent": "CPzXuUAPzXuUAAcABBENAUCoAP_AAH_AAAqIJNNd_X__bX9j-_59_9t0eY1f9_7_v-0zjhfdt-8N3f_X_L8X52M7vF36pq4KuR4Eu3LBIQdlHOHcTUmw6IkVqTPsbk2Mr7NKJ7PEinMbe2dYGH9_n1_z-ZKY7___f__z_v-v___9____7-3f3__5_3---_e_V_99zbv9____39nP___9v-_9_",
+    "eids": [
+      {
+        "source": "liveramp.com",
+        "uids": [
+          {
+            "id": "XY1000bIVBVah9ium-sZ3ykhPiXQbEcUpn4GjCtxrrw2BB",
+            "atype": 9
+          }
+        ]
+      }
+    ]
+  },
+  "regs": {
+    "coppa": 1,
+    "gdpr": 0
+  },
+  "source": {
+    "fd": 0,
+    "tid": "native-tid-0005",
+    "schain": {
+      "complete": 1,
+      "ver": "1.0",
+      "nodes": [
+        {
+          "asi": "foobar.com",
+          "sid": "pub-5501",
+          "hp": 0
+        },
+        {
+          "asi": "thebrave.io",
+          "sid": "brave-4471",
+          "hp": 1
+        }
+      ]
+    }
+  }
+}

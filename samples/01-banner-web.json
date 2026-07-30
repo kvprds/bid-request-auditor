@@ -1,0 +1,67 @@
+{
+  "id": "80ce30c53c16e6ede735f123ef6e32361bfc7b22",
+  "at": 2,
+  "tmax": 120,
+  "cur": ["USD"],
+  "imp": [
+    {
+      "id": "1",
+      "tagid": "header-728x90",
+      "bidfloor": 0.35,
+      "bidfloorcur": "USD",
+      "secure": 1,
+      "banner": {
+        "w": 728,
+        "h": 90,
+        "pos": 1,
+        "battr": [1, 3, 8],
+        "api": [7]
+      }
+    }
+  ],
+  "site": {
+    "id": "102855",
+    "name": "Foobar News",
+    "domain": "www.foobar.com",
+    "cat": ["IAB12"],
+    "page": "https://www.foobar.com/1234.html",
+    "publisher": {
+      "id": "8953",
+      "name": "foobar.com",
+      "domain": "foobar.com"
+    }
+  },
+  "device": {
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "ip": "192.0.2.1",
+    "devicetype": 2,
+    "os": "Windows",
+    "language": "en"
+  },
+  "user": {
+    "id": "55816b39711f9b5acf3b90e313ed29e51665623f"
+  },
+  "regs": {
+    "gdpr": 0
+  },
+  "source": {
+    "fd": 0,
+    "tid": "402e2d0b-3d0f-4b1c-9c2e-0f0c9a7b1a11",
+    "schain": {
+      "complete": 1,
+      "ver": "1.0",
+      "nodes": [
+        {
+          "asi": "foobar.com",
+          "sid": "8953",
+          "hp": 1
+        },
+        {
+          "asi": "thebrave.io",
+          "sid": "brave-4471",
+          "hp": 1
+        }
+      ]
+    }
+  }
+}

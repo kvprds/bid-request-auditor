@@ -1,0 +1,101 @@
+{
+  "id": "9b9ee818a85d948d5231ffe839a9729a",
+  "at": 2,
+  "tmax": 300,
+  "cur": ["USD"],
+  "imp": [
+    {
+      "id": "1",
+      "bidfloor": 8,
+      "bidfloorcur": "USD",
+      "exp": 7200,
+      "video": {
+        "podid": "pod_1",
+        "podseq": 1,
+        "slotinpod": 1,
+        "mimes": ["video/mp4", "video/ogg", "video/webm"],
+        "linearity": 1,
+        "maxduration": 60,
+        "minduration": 0,
+        "protocols": [2, 3, 7],
+        "startdelay": 0,
+        "w": 1920,
+        "h": 1080,
+        "api": [7],
+        "battr": [1, 2, 16]
+      }
+    },
+    {
+      "id": "2",
+      "bidfloor": 8,
+      "bidfloorcur": "USD",
+      "exp": 7200,
+      "video": {
+        "podid": "pod_1",
+        "podseq": 1,
+        "slotinpod": 0,
+        "mimes": ["video/mp4", "video/ogg", "video/webm"],
+        "linearity": 1,
+        "maxduration": 30,
+        "minduration": 0,
+        "protocols": [2, 3, 7],
+        "startdelay": 0,
+        "w": 1920,
+        "h": 1080
+      }
+    }
+  ],
+  "app": {
+    "id": "ctv-app-2002",
+    "name": "Foobar TV",
+    "bundle": "com.foobar.ctv",
+    "storeurl": "https://channelstore.roku.com/details/foobar-tv",
+    "cat": ["IAB1"],
+    "publisher": {
+      "id": "pub-ctv-55",
+      "name": "Foobar Streaming",
+      "domain": "foobar.tv"
+    },
+    "content": {
+      "id": "ep-5590",
+      "title": "Foobar Morning Show",
+      "url": "https://foobar.tv/watch/ep-5590",
+      "livestream": 0
+    }
+  },
+  "device": {
+    "ua": "Roku/DVP-13.0",
+    "ip": "203.0.113.7",
+    "devicetype": 3,
+    "make": "Roku",
+    "os": "Roku OS",
+    "language": "en"
+  },
+  "user": {
+    "id": "ctv-user-2002"
+  },
+  "regs": {
+    "coppa": 0,
+    "gdpr": 0
+  },
+  "source": {
+    "fd": 0,
+    "tid": "pod-tid-0004",
+    "schain": {
+      "complete": 1,
+      "ver": "1.0",
+      "nodes": [
+        {
+          "asi": "foobar.tv",
+          "sid": "pub-ctv-55",
+          "hp": 1
+        },
+        {
+          "asi": "thebrave.io",
+          "sid": "brave-4471",
+          "hp": 1
+        }
+      ]
+    }
+  }
+}

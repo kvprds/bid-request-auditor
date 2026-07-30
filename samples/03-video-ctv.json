@@ -1,0 +1,94 @@
+{
+  "id": "ctv-req-0003",
+  "at": 2,
+  "tmax": 300,
+  "cur": ["USD"],
+  "imp": [
+    {
+      "id": "1",
+      "bidfloor": 8,
+      "bidfloorcur": "USD",
+      "exp": 7200,
+      "video": {
+        "w": 1920,
+        "h": 1080,
+        "pos": 7,
+        "startdelay": 0,
+        "minduration": 30,
+        "maxduration": 15,
+        "rqddurs": [15, 30],
+        "placement": 1,
+        "plcmt": 4,
+        "skip": 0,
+        "skipmin": 15,
+        "skipafter": 5,
+        "protocols": [2, 3, 7],
+        "api": [50],
+        "battr": [99],
+        "companiontype": [1, 2],
+        "podid": 1,
+        "podseq": 1,
+        "slotinpod": 1
+      }
+    }
+  ],
+  "app": {
+    "id": "ctv-app-1001",
+    "name": "Foobar TV",
+    "bundle": "com.foobar.ctv",
+    "cat": ["IAB1"],
+    "publisher": {
+      "id": "pub-ctv-55",
+      "name": "Foobar Streaming",
+      "domain": "foobar.tv"
+    },
+    "content": {
+      "id": "ep-4471",
+      "title": "Late Night Foobar",
+      "series": "Foobar After Dark",
+      "season": "2",
+      "episode": 12,
+      "livestream": 0
+    }
+  },
+  "device": {
+    "ua": "Roku/DVP-13.0",
+    "ip": "203.0.113.7",
+    "devicetype": 3,
+    "make": "Roku",
+    "os": "Roku OS",
+    "language": "en",
+    "geo": {
+      "country": "US",
+      "region": "NY",
+      "type": 2
+    }
+  },
+  "user": {
+    "id": "ctv-user-88f2"
+  },
+  "regs": {
+    "coppa": 0,
+    "gdpr": 0
+  },
+  "source": {
+    "fd": 0,
+    "tid": "ctv-tid-0003",
+    "schain": {
+      "complete": 1,
+      "ver": "1.0",
+      "nodes": [
+        {
+          "asi": "foobar.tv",
+          "sid": "pub-ctv-55",
+          "hp": 1
+        },
+        {
+          "asi": "thebrave.io",
+          "sid": "brave-4471",
+          "hp": 1
+        }
+      ]
+    }
+  }
+}

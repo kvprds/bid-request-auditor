@@ -1,0 +1,70 @@
+{
+  "id": "a1b2c3d4-inapp-0002",
+  "at": 3,
+  "tmax": 150,
+  "cur": ["USD"],
+  "wseat": ["agency-1", "agency-2"],
+  "bseat": ["blocked-seat-9"],
+  "imp": [
+    {
+      "id": "1",
+      "tagid": "interstitial-slot",
+      "bidfloor": 0.5,
+      "bidfloorcur": "EUR",
+      "instl": 1,
+      "secure": 1,
+      "banner": {
+        "w": 728,
+        "h": 90,
+        "pos": 1,
+        "battr": [3, 8]
+      }
+    }
+  ],
+  "site": {
+    "id": "site-999",
+    "domain": "m.foobar.com",
+    "page": "https://m.foobar.com/article"
+  },
+  "app": {
+    "id": "app-628677149",
+    "name": "Foobar Weather",
+    "cat": ["IAB15"],
+    "publisher": {
+      "id": "pub-7781",
+      "name": "Foobar Mobile"
+    }
+  },
+  "device": {
+    "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15",
+    "ip": "198.51.100.24",
+    "devicetype": 2,
+    "make": "Apple",
+    "model": "iPhone",
+    "os": "iOS",
+    "osv": "17.1",
+    "lmt": 1,
+    "ifa": "AA000DFE-7416-8477-C70D-291F574D3447",
+    "didmd5": "9f86d081884c7d659a2feaa0c55ad015"
+  },
+  "user": {
+    "id": "ffffffd5135596709273b3a1a07e466ea2bf4fff"
+  },
+  "regs": {
+    "gdpr": 1
+  },
+  "source": {
+    "fd": 1,
+    "tid": "77c1e2a4-inapp-tid-0002",
+    "schain": {
+      "complete": 1,
+      "ver": "1.0",
+      "nodes": [
+        {
+          "asi": "thebrave.io",
+          "hp": 1
+        }
+      ]
+    }
+  }
+}
