@@ -1,6 +1,7 @@
 ### Legend
 
 Category: **S** spec · **E** enum · **C** contradiction · **P** privacy
+
 Severity: **ERROR** (bold) · WARNING · INFO
 
 ### `samples/01-banner-web.json` — clean

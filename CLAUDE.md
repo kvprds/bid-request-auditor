@@ -16,5 +16,5 @@
   browser with no changes and no backend.
 - PLAN.md before any code; if the implementation disagrees with the
   plan, stop and report rather than editing the plan to match the code.
-- Final count: 22 distinct checks. Capped deliberately.
+- Final count: 26 distinct checks. Capped deliberately.
 - Never modify anything in reference/ or samples/.

@@ -4,8 +4,8 @@ A validator for **OpenRTB 2.6** bid requests. It reports spec violations,
 invalid AdCOM 1.0 enum values, internal contradictions, and privacy
 signals contradicted by the identifiers actually carried in the request.
 
-- **21 checks**, each citing the spec section it came from, plus
-  `invalid-json` for unparseable input — the 22 the project caps at.
+- **26 checks**, each citing the spec section it came from, plus
+  `invalid-json` for unparseable input — the 26 the project caps at.
 - Severity is disciplined: **ERROR only where a spec table literally says
   "required"** (plus three privacy contradictions). "Recommended" is at
   most WARNING. Unknown fields and unrecognised enum values are INFO at
