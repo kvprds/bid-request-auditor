@@ -90,23 +90,51 @@
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   button.ghost { color: var(--muted); }
 
-  .dropzone { position: relative; border: 2px dashed transparent; border-radius: 8px; transition: border-color .12s, background .12s; }
+  .dropzone { position: relative; border: 2px dashed transparent; border-radius: 8px; transition: border-color .12s, background .12s; display: flex; }
   .dropzone.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+  /* --- editor: textarea + synced line-number gutter --------------------- */
+  .editor {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 26rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .editor:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .line-numbers {
+    flex: 0 0 auto;
+    min-width: 2.4rem;
+    padding: .7rem .5rem .7rem .6rem;
+    text-align: right;
+    color: var(--muted);
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    font: 12.5px/1.5 var(--mono);
+    white-space: pre;
+    overflow: hidden;
+    user-select: none;
+  }
 
   textarea {
     display: block;
+    flex: 1;
     width: 100%;
     min-height: 26rem;
     resize: vertical;
     padding: .7rem;
     color: var(--ink);
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 6px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
     font: 12.5px/1.5 var(--mono);
     tab-size: 2;
   }
-  textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  textarea:focus-visible { outline: none; }
 
   .drophint { margin: .5rem 0 0; font-size: .8rem; color: var(--muted); }
 
@@ -148,6 +176,21 @@
   .message { margin: .3rem 0 .2rem; font-size: .88rem; }
   .spec { font-size: .78rem; color: var(--muted); }
 
+  .line-jump {
+    font: 700 .72rem var(--mono);
+    padding: .05rem .4rem;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .group.ERROR .line-jump { color: var(--error); }
+  .group.WARNING .line-jump { color: var(--warning); }
+  .group.INFO .line-jump { color: var(--info); }
+  .line-jump:hover { background: color-mix(in srgb, currentColor 14%, transparent); }
+  .line-jump:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
   .state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
   .state.ok { color: var(--ok); background: var(--ok-bg); border-radius: 8px; }
   .state-title { font-size: 1.05rem; font-weight: 600; margin-bottom: .25rem; }
@@ -187,10 +230,13 @@
       </div>
       <div class="dropzone" id="dropzone">
         <label class="sr-only" for="json">Bid request JSON</label>
-        <textarea id="json" spellcheck="false" autocomplete="off"
-          placeholder="Paste an OpenRTB 2.6 bid request, drop a .json file here, or load a sample above."></textarea>
+        <div class="editor">
+          <div class="line-numbers" id="line-numbers" aria-hidden="true">1</div>
+          <textarea id="json" spellcheck="false" autocomplete="off"
+            placeholder="Paste an OpenRTB 2.6 bid request, drop a .json file here, or load a sample above."></textarea>
+        </div>
       </div>
-      <p class="drophint">Drop a <code>.json</code> file anywhere on this panel. Findings update as you type.</p>
+      <p class="drophint">Drop a <code>.json</code> file anywhere on this panel. Findings update as you type. Click a finding's line badge to jump straight to it.</p>
     </section>
 
     <section class="panel" aria-labelledby="results-heading" aria-live="polite">
@@ -218,6 +264,7 @@
   var results = document.getElementById('results');
   var dropzone = document.getElementById('dropzone');
   var fileInput = document.getElementById('file');
+  var lineNumbersEl = document.getElementById('line-numbers');
 
   var SEVERITIES = api ? api.SEVERITY_ORDER : ['ERROR', 'WARNING', 'INFO'];
   var CATEGORY_NAMES = {
@@ -243,7 +290,153 @@
     return box;
   }
 
-  function findingNode(finding) {
+  // --- line-number gutter ---------------------------------------------
+
+  function updateLineNumbers() {
+    var count = textarea.value.split('\n').length;
+    var lines = new Array(count);
+    for (var k = 0; k < count; k++) lines[k] = k + 1;
+    lineNumbersEl.textContent = lines.join('\n');
+  }
+
+  textarea.addEventListener('scroll', function () {
+    lineNumbersEl.scrollTop = textarea.scrollTop;
+  });
+
+  function lineStartIndex(text, lineNum) {
+    var idx = 0, count = 1;
+    if (lineNum <= 1) return 0;
+    while (count < lineNum) {
+      var next = text.indexOf('\n', idx);
+      if (next === -1) return idx;
+      idx = next + 1;
+      count++;
+    }
+    return idx;
+  }
+
+  function goToLine(lineNum) {
+    var text = textarea.value;
+    var start = lineStartIndex(text, lineNum);
+    var end = text.indexOf('\n', start);
+    if (end === -1) end = text.length;
+    textarea.focus();
+    textarea.setSelectionRange(start, end);
+    var lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 18.75;
+    textarea.scrollTop = Math.max(0, (lineNum - 3) * lineHeight);
+    lineNumbersEl.scrollTop = textarea.scrollTop;
+  }
+
+  // --- map each JSON path to the line it appears on --------------------
+  // A hand-rolled scanner rather than JSON.parse, because JSON.parse throws
+  // away position info. Paths use the same "a.b[0].c" shape the rule engine
+  // uses for finding.path. If a finding's exact path isn't in the map (e.g.
+  // the rule engine's path format differs slightly), resolveLine() walks up
+  // the path until it finds an ancestor that is, so you still land close.
+
+  function buildPathLineMap(text) {
+    var i = 0, line = 1, len = text.length;
+    var map = Object.create(null);
+
+    function peek() { return text[i]; }
+    function advance() {
+      var ch = text[i++];
+      if (ch === '\n') line++;
+      return ch;
+    }
+    function skipWs() {
+      while (i < len && /\s/.test(text[i])) advance();
+    }
+    function parseString() {
+      advance(); // opening quote
+      var out = '';
+      while (i < len && text[i] !== '"') {
+        if (text[i] === '\\') { out += advance(); if (i < len) out += advance(); }
+        else out += advance();
+      }
+      if (i < len) advance(); // closing quote
+      return out;
+    }
+    function parseValue(path) {
+      skipWs();
+      if (path !== null) map[path] = { line: line };
+      var ch = peek();
+      if (ch === '{') return parseObject(path);
+      if (ch === '[') return parseArray(path);
+      if (ch === '"') { parseString(); return; }
+      while (i < len && !/[,}\]\s]/.test(text[i])) advance();
+    }
+    function parseObject(path) {
+      advance(); // {
+      skipWs();
+      if (peek() === '}') { advance(); return; }
+      while (i < len) {
+        skipWs();
+        if (peek() !== '"') break;
+        var key = parseString();
+        skipWs();
+        if (peek() === ':') advance();
+        var childPath = path === '' ? key : path + '.' + key;
+        parseValue(childPath);
+        skipWs();
+        if (peek() === ',') { advance(); continue; }
+        break;
+      }
+      skipWs();
+      if (peek() === '}') advance();
+    }
+    function parseArray(path) {
+      advance(); // [
+      skipWs();
+      if (peek() === ']') { advance(); return; }
+      var idx = 0;
+      while (i < len) {
+        var childPath = path + '[' + idx + ']';
+        parseValue(childPath);
+        idx++;
+        skipWs();
+        if (peek() === ',') { advance(); continue; }
+        break;
+      }
+      skipWs();
+      if (peek() === ']') advance();
+    }
+
+    skipWs();
+    parseValue('');
+    return map;
+  }
+
+  function resolveLine(finding, lineMap) {
+    if (finding.path === '(document)') {
+      var m = /line (\d+)/.exec(finding.message || '');
+      return m ? parseInt(m[1], 10) : null;
+    }
+    if (!lineMap) return null;
+    // A few checks (site-and-app-both, wseat-bseat-both, wlang-wlangb-both,
+    // keywords-kwarray-both) report a composite path like "site + app" or
+    // "site.keywords + site.kwarray" rather than a single JSON path.
+    // Jump to the first half.
+    var path = finding.path.indexOf(' + ') !== -1
+      ? finding.path.split(' + ')[0]
+      : finding.path;
+    if (lineMap[path]) return lineMap[path].line;
+    while (path) {
+      var withoutIndex = path.replace(/\[\d+\]$/, '');
+      if (withoutIndex !== path && lineMap[withoutIndex]) return lineMap[withoutIndex].line;
+      var dotIdx = path.lastIndexOf('.');
+      var bracketIdx = path.lastIndexOf('[');
+      var cut = Math.max(dotIdx, bracketIdx);
+      if (cut === -1) break;
+      path = path.slice(0, cut);
+      if (lineMap[path]) return lineMap[path].line;
+    }
+    return null;
+  }
+
+  // --- findings rendering ------------------------------------------------
+
+  function findingNode(finding, lineMap) {
     var item = el('div', 'finding');
 
     var head = el('div', 'finding-head');
@@ -252,14 +445,25 @@
     head.appendChild(chip);
     head.appendChild(el('span', 'check-id', finding.id));
     head.appendChild(el('span', 'path', finding.path));
-    item.appendChild(head);
 
+    var lineNum = resolveLine(finding, lineMap);
+    if (lineNum) {
+      var jump = document.createElement('button');
+      jump.type = 'button';
+      jump.className = 'line-jump';
+      jump.textContent = 'Line ' + lineNum;
+      jump.title = 'Jump to this line in the request';
+      jump.addEventListener('click', function () { goToLine(lineNum); });
+      head.appendChild(jump);
+    }
+
+    item.appendChild(head);
     item.appendChild(el('p', 'message', finding.message));
     item.appendChild(el('div', 'spec', finding.spec));
     return item;
   }
 
-  function render(result) {
+  function render(result, lineMap) {
     results.textContent = '';
 
     var total = result.findings.length;
@@ -280,13 +484,14 @@
       var head = el('div', 'group-head', severity);
       head.appendChild(el('span', String(group.length)));
       section.appendChild(head);
-      group.forEach(function (finding) { section.appendChild(findingNode(finding)); });
+      group.forEach(function (finding) { section.appendChild(findingNode(finding, lineMap)); });
       results.appendChild(section);
     });
   }
 
   function audit() {
     var text = textarea.value;
+    updateLineNumbers();
 
     if (text.trim() === '') {
       results.textContent = '';
@@ -297,6 +502,9 @@
 
     var result = api.audit(text);
 
+    var lineMap = null;
+    try { lineMap = buildPathLineMap(text); } catch (e) { lineMap = null; }
+
     if (result.findings.length === 0) {
       results.textContent = '';
       results.appendChild(state('ok', 'No problems found',
@@ -304,7 +512,7 @@
       return;
     }
 
-    render(result);
+    render(result, lineMap);
   }
 
   var pending = 0;
