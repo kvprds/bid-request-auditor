@@ -1,8 +1,9 @@
 # NOTES.md
 
 Audits an OpenRTB 2.6 bid request and reports spec violations, invalid
-AdCOM enum values, and internal contradictions. 26 checks. Live page:\
-Repo: <link> https://github.com/kvprds/bid-request-auditor <link>
+AdCOM enum values, and internal contradictions. 21 checks.
+Live page: <https://bid-request-auditor.vercel.app>\
+Repo: <https://github.com/kvprds/bid-request-auditor>
 
 ## How I directed the tools I used
 
@@ -73,7 +74,7 @@ understanding the problem, not writing code.
   (§3.2.12), so it looks like a deal value copied to the top of the
   request. §2.6 says tolerate unexpected enum values, so it's not an
   error.
-- **Capped at 26 checks** rather than covering the spec. Left out:
+- **Capped at 21 checks** rather than covering the spec. Left out:
   deprecated-field notices, IP-vs-geo consistency, most of the Content
   object.
 
