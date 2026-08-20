@@ -4,8 +4,10 @@ A validator for **OpenRTB 2.6** bid requests. It reports spec violations,
 invalid AdCOM 1.0 enum values, internal contradictions, and privacy
 signals contradicted by the identifiers actually carried in the request.
 
-- **26 checks**, each citing the spec section it came from, plus
-  `invalid-json` for unparseable input — the 26 the project caps at.
+- **21 checks**, each citing the spec section it came from, plus
+  `invalid-json` for unparseable input — 22 distinct finding IDs in
+  total. `CHECKS.length` in `src/audit.ts` is the authority; by
+  category that is spec 10, enums 2, contradictions 6, privacy 3.
 - Severity is disciplined: **ERROR only where a spec table literally says
   "required"** (plus three privacy contradictions). "Recommended" is at
   most WARNING. Unknown fields and unrecognised enum values are INFO at
@@ -19,7 +21,7 @@ Every rule is derived from `reference/OpenRTB-2.6.pdf` and
 `reference/AdCOM-v1.0.md`, which are the only source of truth.
 `reference/` and `samples/` are read-only.
 
-**Live page:** _not deployed yet — replace this line with the Vercel URL._
+**Live page:** <https://bid-request-auditor.vercel.app>
 
 ## Requirements
 
@@ -47,7 +49,7 @@ on a usage or read failure, `0` otherwise — so it drops into CI as-is.
 node --test tests/samples.test.ts tests/web-bundle.test.ts
 ```
 
-20 tests. `samples.test.ts` asserts the exact set of findings PLAN.md
+21 tests. `samples.test.ts` asserts the exact set of findings PLAN.md
 predicts for each sample — severity and per-check count included.
 `web-bundle.test.ts` asserts the browser build is neither stale nor
 behaviourally different from `src/`.

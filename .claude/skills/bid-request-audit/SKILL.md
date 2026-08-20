@@ -5,7 +5,7 @@ description: Audit an OpenRTB 2.6 bid request JSON for spec violations, invalid 
 
 # Bid request audit
 
-Run the auditor; do not audit by reading the JSON yourself. The 26 checks
+Run the auditor; do not audit by reading the JSON yourself. The 21 checks
 are deterministic and each cites the spec section it came from.
 
 ```bash

@@ -18,9 +18,12 @@ import type { Severity } from '../src/types.ts';
 const SAMPLES = join(import.meta.dirname, '..', 'samples');
 
 /**
- * PLAN.md lists 26 finding rows across the five samples (9 + 9 + 8), drawn
- * from 21 distinct check IDs. With invalid-json that is the 22 checks
- * CLAUDE.md caps the auditor at.
+ * PLAN.md lists 26 finding ROWS across the five samples (9 + 9 + 8), drawn
+ * from 21 distinct check IDs. Those are different numbers and the prose
+ * used to conflate them: README, CLAUDE.md, NOTES.md and SKILL.md all
+ * described the auditor as having "26 checks". It has 21, plus
+ * invalid-json for a parse failure, so 22 distinct finding IDs.
+ * `documented check count matches CHECKS` below now guards that.
  */
 const EXPECTED: Record<string, string[]> = {
   // PLAN.md: "samples/01-banner-web.json - clean"
@@ -153,4 +156,31 @@ test('audit does not mutate its input', () => {
   const request: unknown = JSON.parse(text);
   audit(request);
   assert.deepEqual(request, JSON.parse(text));
+});
+
+/**
+ * The check count is quoted in four documents, and it drifted once
+ * already — 26 (the sample finding-row total) was copied in as the number
+ * of checks. `CHECKS` is the only authority; this fails if any of them
+ * disagrees with it, or with each other.
+ */
+test('documented check count matches CHECKS', () => {
+  assert.equal(CHECKS.length, 21, 'CHECKS changed - update the docs listed below to match');
+
+  const repo = join(import.meta.dirname, '..');
+  const documents = [
+    'README.md',
+    'CLAUDE.md',
+    'NOTES.md',
+    join('.claude', 'skills', 'bid-request-audit', 'SKILL.md'),
+  ];
+
+  for (const document of documents) {
+    const text = readFileSync(join(repo, document), 'utf8');
+    const quoted = [...text.matchAll(/(\d+)\s+(?:distinct\s+)?checks\b/g)].map((m) => Number(m[1]));
+    assert.ok(quoted.length > 0, `${document} no longer states a check count`);
+    for (const count of quoted) {
+      assert.equal(count, CHECKS.length, `${document} says ${count} checks; CHECKS.length is ${CHECKS.length}`);
+    }
+  }
 });

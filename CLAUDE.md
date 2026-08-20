@@ -16,5 +16,9 @@
   browser with no changes and no backend.
 - PLAN.md before any code; if the implementation disagrees with the
   plan, stop and report rather than editing the plan to match the code.
-- Final count: 26 distinct checks. Capped deliberately.
+- Final count: 21 distinct checks. Capped deliberately. `invalid-json`
+  is reported the same way but is a parse failure, not a check, so the
+  auditor can emit 22 distinct finding IDs. If this number and
+  `CHECKS.length` ever disagree, the code is right and this line is
+  stale — say so rather than adjusting the code to match.
 - Never modify anything in reference/ or samples/.
