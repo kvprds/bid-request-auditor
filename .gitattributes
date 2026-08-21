@@ -1,0 +1,7 @@
+# web/auditor.js is generated from src/*.ts by tools/build-web.mjs.
+# Marking it generated keeps it out of Linguist's language stats (the repo
+# is TypeScript, not JavaScript) and collapses it by default in diffs.
+# This is a Linguist-only attribute: it sets no text/eol/diff filter, so the
+# bytes on disk are untouched and tests/web-bundle.test.ts still compares
+# the committed bundle byte-for-byte against a fresh build.
+web/auditor.js linguist-generated=true
